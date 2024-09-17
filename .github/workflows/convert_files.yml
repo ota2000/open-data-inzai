@@ -23,9 +23,11 @@ jobs:
       - name: Run data_converter.sh script for changed files
         run: |
           chmod +x ./data_converter.sh
+          git fetch origin main
           for file in $(git diff --name-only --diff-filter=ACMRT origin/main | grep '^original/.*\.csv$'); do
             ./data_converter.sh "$(basename $file)"
           done
+        shell: /usr/bin/bash -e {0}
 
       # 生成されたCSVおよびJSONファイルをPRに含める
       - name: Commit and push changes
