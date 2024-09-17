@@ -37,8 +37,8 @@ jobs:
 
           current_branch="${{ github.head_ref }}"
 
+          git fetch origin $current_branch
           git checkout $current_branch
-
           git add ./csv/*.csv ./json/*.json
 
           if git diff --cached --quiet; then
