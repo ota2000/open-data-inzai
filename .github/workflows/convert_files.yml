@@ -24,7 +24,7 @@ jobs:
         run: |
           chmod +x ./data_converter.sh
           git fetch origin main
-          for file in $(git diff --name-only --diff-filter=ACMRT origin/main | grep '^original/.*\.csv$'); do
+          for file in $(git diff --name-only --diff-filter=ACMRT origin/main -- original/ | grep '^original/.*\.csv$'); do
             ./data_converter.sh "$(basename $file)"
           done
         shell: /usr/bin/bash -e {0}
