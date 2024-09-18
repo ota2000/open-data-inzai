@@ -19,32 +19,29 @@ jobs:
           sudo apt-get install -y nkf jq npm
           sudo npm install -g csv2json
 
-      # 取得したファイルをdata_converter.shに渡して実行
+      # 変更されたCSVファイルを処理
       - name: Run data_converter.sh script for changed files
         run: |
           chmod +x ./data_converter.sh
-          git fetch origin main
-          for file in $(git diff --name-only --diff-filter=ACMRT origin/main -- original/ | grep '^original/.*\.csv$'); do
+          git fetch origin ${{ github.base_ref }}
+          git diff --name-only --diff-filter=ACMRT origin/${{ github.base_ref }} -- original/ | grep '^original/.*\.csv$' | while read -r file; do
             ./data_converter.sh "$(basename $file)"
           done
         shell: /usr/bin/bash -e {0}
 
-      # 生成されたCSVおよびJSONファイルをPRに含める
+      # 生成されたファイルをコミットしてプッシュ
       - name: Commit and push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-          current_branch="${{ github.head_ref }}"
-
-          git fetch origin $current_branch
-          git checkout $current_branch
           git add ./csv/*.csv ./json/*.json
-
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
             git commit -m "Convert files to CSV and JSON"
-            git push origin $current_branch
+            git push origin ${{ github.head_ref }} || {
+              echo "Failed to push changes, please resolve conflicts manually."
+              exit 1
+            }
           fi
         shell: /usr/bin/bash -e {0}
